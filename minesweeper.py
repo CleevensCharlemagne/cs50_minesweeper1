@@ -298,12 +298,13 @@ class MinesweeperAI():
 
 
 
-    def make_random_move(self):
+    def make_safe_move(self):
         """
-        Returns a move to make on the Minesweeper board.
-        Should choose randomly among cells that:
-            1) have not already been chosen, and
-            2) are not known to be mines
+        Returns a safe cell to choose on the Minesweeper board.
+        The move must be known to be safe, and not already a move
+        that has been made.
+        This function may use the knowledge in self.mines, self.safes
+        and self.moves_made, but should not modify any of those values.
         """
         print(self.safes - self.moves_made)
         for cell in self.safes:
@@ -311,3 +312,25 @@ class MinesweeperAI():
                 return cell
 
         return None
+
+    def make_random_move(self):
+        """
+        Returns a move to make on the Minesweeper board.
+        Should choose randomly among cells that:
+            1) have not already been chosen, and
+            2) are not known to be mines
+        """
+        i = random.randint(0, self.height-1)
+        j = random.randint(0, self.height-1)
+        movable_cells = []
+        for i in range(self.height):
+            for j in range(self.width):
+                cell = (i, j)
+                if cell not in self.moves_made and cell not in self.mines:
+                    movable_cells.append(cell)
+        if len(movable_cells) > 0:
+            random_cell = movable_cells[random.randint(0, len(movable_cells)-1)]
+            return random_cell
+        else:
+            return None
+
