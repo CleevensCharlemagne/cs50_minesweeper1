@@ -193,16 +193,20 @@ class MinesweeperAI():
         """
         raise NotImplementedError
 
-    def make_safe_move(self):
+    def add_knowledge(self, cell, count):
         """
-        Returns a safe cell to choose on the Minesweeper board.
-        The move must be known to be safe, and not already a move
-        that has been made.
-
-        This function may use the knowledge in self.mines, self.safes
-        and self.moves_made, but should not modify any of those values.
+        Called when the Minesweeper board tells us, for a given
+        safe cell, how many neighboring cells have mines in them.
+        This function should:
+            1) mark the cell as a move that has been made
+            2) mark the cell as safe
+            3) add a new sentence to the AI's knowledge base
+               based on the value of `cell` and `count`
+            4) mark any additional cells as safe or as mines
+               if it can be concluded based on the AI's knowledge base
+            5) add any new sentences to the AI's knowledge base
+               if they can be inferred from existing knowledge
         """
-
         # marking the cell as a move made cell
         self.moves_made.add(cell)
 
@@ -253,7 +257,7 @@ class MinesweeperAI():
             add_cell(new_cell)
 
         # adding the newly created sentence to knowledge base
-        new_sentence = Sentence(cells, itertools.count)
+        new_sentence = Sentence(cells, count)
         self.knowledge.append(new_sentence)
 
         # helper function to evaluate knowledge base after appending a new sentece to it
@@ -272,6 +276,27 @@ class MinesweeperAI():
                     known_mine_cells = list(sentence.known_mines())
                     for cell in known_mine_cells:
                         self.mark_mine(cell)
+
+            # making inference on knowledge base by finding subsets
+            sentences = []
+            for sentence in self.knowledge:
+
+                if sentence != new_sentence:
+                    # the set must be a subset and it's length must be nonzero; we aren't considering empty sets
+                    if len(sentence.cells) > 0 and sentence.cells.issubset(new_sentence.cells):
+                        new_set = new_sentence.cells - sentence.cells
+                        new_count = abs(new_sentence.count - sentence.count)
+                        temp_sentence = Sentence(new_set, new_count)
+                        sentences.append(temp_sentence)
+                    elif len(new_sentence.cells) > 0 and new_sentence.cells.issubset(sentence.cells):
+                        new_set = sentence.cells - new_sentence.cells
+                        new_count = abs(sentence.count - new_sentence.count)
+                        temp_sentence = Sentence(new_set, new_count)
+                        sentences.append(temp_sentence)
+            if len(sentences) > 0:
+                self.knowledge += sentences
+
+
 
     def make_random_move(self):
         """
