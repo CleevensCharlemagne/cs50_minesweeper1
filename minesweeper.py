@@ -202,7 +202,59 @@ class MinesweeperAI():
         This function may use the knowledge in self.mines, self.safes
         and self.moves_made, but should not modify any of those values.
         """
-        raise NotImplementedError
+
+        # marking the cell as a move made cell
+        self.moves_made.add(cell)
+
+        # marking the cell as safe
+        if cell not in self.safes:
+            self.mark_safe(cell)
+
+        # extracting row, column value from cell
+        i, j = cell
+
+        cells = set()
+
+        # helper function to add a cell to the cells set
+        def add_cell(new_cell):
+            if new_cell not in self.safes and new_cell not in self.moves_made:
+                cells.add(new_cell)
+
+        # neighbors from same column
+        if i+1 < self.height:
+            new_cell = (i+1, j)
+            add_cell(new_cell)
+        if i-1 >= 0:
+            new_cell = (i-1, j)
+            add_cell(new_cell)
+
+        # neighbors from same row
+        if j+1 < self.width:
+            new_cell = (i, j+1)
+            add_cell(new_cell)
+        if j-1 >= 0:
+            new_cell = (i, j-1)
+            add_cell(new_cell)
+
+        # neighbors from diagonal
+        if i-1 >= 0 and j-1 >= 0:
+            new_cell = (i-1, j-1)
+            add_cell(new_cell)
+        if i+1 < self.height and j+1 < self.height:
+            new_cell = (i+1, j+1)
+            add_cell(new_cell)
+
+        # neighbors from anti-diagonal
+        if i-1 >= 0 and j+1 < self.width:
+            new_cell = (i-1, j+1)
+            add_cell(new_cell)
+        if i+1 < self.height and j-1 >= 0:
+            new_cell = (i+1, j-1)
+            add_cell(new_cell)
+
+        # adding the newly created sentence to knowledge base
+        new_sentence = Sentence(cells, itertools.count)
+        self.knowledge.append(new_sentence)
 
     def make_random_move(self):
         """
