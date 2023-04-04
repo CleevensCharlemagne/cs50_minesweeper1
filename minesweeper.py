@@ -256,6 +256,23 @@ class MinesweeperAI():
         new_sentence = Sentence(cells, itertools.count)
         self.knowledge.append(new_sentence)
 
+        # helper function to evaluate knowledge base after appending a new sentece to it
+        def evaluate_knowledges(new_sentence):
+
+            # marking the cells as safe and mines using the knowledge from known_safes and known_mines function
+            for sentence in self.knowledge:
+                if len(sentence.cells) == 0:
+                    self.knowledge.remove(sentence)
+                    continue
+                if not sentence.known_safes() is None:
+                    known_safe_cells = list(sentence.known_safes())
+                    for cell in known_safe_cells:
+                        self.mark_safe(cell)
+                if not sentence.known_mines() is None:
+                    known_mine_cells = list(sentence.known_mines())
+                    for cell in known_mine_cells:
+                        self.mark_mine(cell)
+
     def make_random_move(self):
         """
         Returns a move to make on the Minesweeper board.
